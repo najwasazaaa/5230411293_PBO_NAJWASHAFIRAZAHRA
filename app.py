@@ -1,0 +1,182 @@
+import random
+
+# Kelas dasar
+class Pangan:
+    def __init__(self, kode_produk, nama, harga):
+        self.kode_produk = kode_produk
+        self.nama = nama
+        self.harga = harga
+
+    def deskripsi(self):
+        return f"{self.nama} memiliki harga Rp{self.harga}."
+
+# Subkelas untuk Camilan
+class Camilan(Pangan):
+    def __init__(self, kode_produk, nama, harga, rasa):
+        super().__init__(kode_produk, nama, harga)
+        self.rasa = rasa
+
+    def deskripsi(self):
+        return f"Camilan {self.nama} dengan rasa {self.rasa} memiliki harga Rp{self.harga}."
+
+# Subkelas untuk Makanan
+class Makanan(Pangan):
+    def __init__(self, kode_produk, nama, harga, jenis_masak):
+        super().__init__(kode_produk, nama, harga)
+        self.jenis_masak = jenis_masak
+
+    def deskripsi(self):
+        return f"Makanan {self.nama} dari masakan {self.jenis_masak} memiliki harga Rp{self.harga}."
+
+# Subkelas untuk Minuman
+class Minuman(Pangan):
+    def __init__(self, kode_produk, nama, harga, ukuran_botol):
+        super().__init__(kode_produk, nama, harga)
+        self.ukuran_botol = ukuran_botol
+
+    def deskripsi(self):
+        return f"Minuman {self.nama} dengan botol ukuran {self.ukuran_botol} liter memiliki harga Rp{self.harga}."
+
+# Kelas untuk Pegawai
+class Pegawai:
+    def __init__(self, nik, nama, alamat):
+        self.nik = nik
+        self.nama = nama
+        self.alamat = alamat
+
+    def info_pegawai(self):
+        return f"Pegawai: {self.nama}, NIK: {self.nik}, Alamat: {self.alamat}"
+
+# Kelas untuk Transaksi
+class Transaksi:
+    def __init__(self):
+        self.no_transaksi = random.randint(1000, 9999)
+        self.items = []
+    
+    def tambah_item(self, item, jumlah):
+        self.items.append((item, jumlah))
+
+    def total_harga(self):
+        total = sum(item.harga * jumlah for item, jumlah in self.items)
+        return total
+
+    def struk(self, pegawai):
+        struk_str = f"Struk Pembelian:\nNo Transaksi: {self.no_transaksi}\nNama Pegawai: {pegawai.nama}\n"
+        struk_str += "Detail Transaksi:\n"
+        
+        for item, jumlah in self.items:
+            struk_str += f"- Nama Produk: {item.nama}, Jumlah: {jumlah}, Harga: Rp{item.harga}, Subtotal: Rp{item.harga * jumlah}\n"
+        
+        struk_str += f"Total Harga: Rp{self.total_harga()}\n"
+        
+        # Input pembayaran dan pengembalian
+        pembayaran = float(input("Masukkan jumlah pembayaran: "))
+        
+        while pembayaran < self.total_harga():
+            print("Jumlah pembayaran kurang. Silakan coba lagi.")
+            pembayaran = float(input("Masukkan jumlah pembayaran: "))
+        
+        pengembalian = pembayaran - self.total_harga()
+        struk_str += f"Jumlah Pembayaran: Rp{pembayaran}\nPengembalian: Rp{pengembalian}\n"
+        
+        return struk_str
+
+# Katalog Produk
+katalog_produk = {
+    'snack': [
+        Camilan('S001', 'Chips', 2500, 'Salty'),
+        Camilan('S002', 'Cookies', 3000, 'Sweet'),
+        Camilan('S003', 'Popcorn', 4000, 'Butter'),
+        Camilan('S004', 'Nuts', 5000, 'Spicy')
+    ],
+    'makanan': [
+        Makanan('M001', 'Nasi Goreng', 15000, 'Indonesian'),
+        Makanan('M002', 'Sate Ayam', 20000, 'Indonesian'),
+        Makanan('M003', 'Rendang', 25000, 'Minangkabau'),
+        Makanan('M004', 'Pasta', 30000, 'Italian')
+    ],
+    'minuman': [
+        Minuman('D001', 'Teh Botol', 5000, 0.5),
+        Minuman('D002', 'Air Mineral', 3000, 1),
+        Minuman('D003', 'Jus Jeruk', 8000, 1),
+        Minuman('D004', 'Kopi Hitam', 10000, 0.25)
+    ]
+}
+
+# Daftar pegawai
+daftar_pegawai = []
+
+while True:
+    print("\n=======Menu Produk Toko Barokah =========")
+    print("1. Tambah Pegawai")
+    print("2. Lihat Data Pegawai")
+    print("3. Lihat Katalog Produk")
+    print("4. Transaksi")
+
+    pilihan_user = input("Pilih menu yang ingin dilakukan: ")
+
+    if pilihan_user == '1':
+        nik_pegawai = input("Masukkan NIK pegawai: ")
+        nama_pegawai = input("Masukkan nama pegawai: ")
+        alamat_pegawai = input("Masukkan alamat pegawai: ")
+        
+        pegawai_baru = Pegawai(nik_pegawai, nama_pegawai, alamat_pegawai)
+        daftar_pegawai.append(pegawai_baru)
+        
+        print(pegawai_baru.info_pegawai())
+
+    elif pilihan_user == '2':
+        print("\nData Pegawai:")
+        
+        for pegawai in daftar_pegawai:
+            print(pegawai.info_pegawai())
+
+    elif pilihan_user == '3':
+        print("\nKatalog Produk:")
+        
+        for kategori in katalog_produk:
+            print(f"\nKategori: {kategori.capitalize()}")
+            print(f"{'Kode Produk':<12}{'Nama':<20}{'Harga (Rp)':<15}")
+            print("-" * 50)
+            for produk in katalog_produk[kategori]:
+                print(f"{produk.kode_produk:<12}{produk.nama:<20}{produk.harga:<15}")
+
+    elif pilihan_user == '4':
+        if not daftar_pegawai:
+            print("Silakan tambahkan pegawai terlebih dahulu.")
+            continue
+        
+        pegawai_baru = daftar_pegawai[-1]  # Mengambil pegawai terakhir sebagai contoh
+        
+        transaksi_baru = Transaksi()
+        
+        while True:
+            item_pilihan = input("Pilih item (snack/makanan/minuman) atau ketik 'selesai' untuk menyelesaikan transaksi: ")
+            if item_pilihan.lower() == 'selesai':
+                break
+            
+            if item_pilihan.lower() in katalog_produk:
+                print(f"\nDaftar {item_pilihan}:")
+                for produk in katalog_produk[item_pilihan]:
+                    print(f"{produk.kode_produk}: {produk.nama} - Rp{produk.harga}")
+                
+                kode_produk = input("Masukkan kode produk yang ingin dibeli: ")
+                jumlah_produk = int(input("Masukkan jumlah produk yang ingin dibeli: "))
+                
+                # Cari produk berdasarkan kode
+                produk_dipilih = next((p for p in katalog_produk[item_pilihan] if p.kode_produk == kode_produk), None)
+                
+                if produk_dipilih:
+                    transaksi_baru.tambah_item(produk_dipilih, jumlah_produk)
+                    print(f"{jumlah_produk} x {produk_dipilih.nama} telah ditambahkan ke dalam transaksi.")
+                else:
+                    print("Produk tidak ditemukan.")
+
+            else:
+                print("Item tidak dikenali. Silakan coba lagi.")
+
+        # Tampilkan struk setelah transaksi selesai
+        print(transaksi_baru.struk(pegawai_baru))
+
+    else:
+      print("Mohon memilih opsi yang tersedia.")
