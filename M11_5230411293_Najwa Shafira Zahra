@@ -1,0 +1,128 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import LabelEncoder
+import sys
+
+# Fungsi preprocessing data
+def preprocess_data(file_path):
+    try:
+        # Membaca data
+        data = pd.read_excel(file_path)
+        print("Data berhasil dimuat.\n")
+        print("Preview data:")
+        print(data.head())
+
+        # Pisahkan kolom numerik dan kategorikal
+        numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
+        categorical_columns = data.select_dtypes(include=['object']).columns
+
+        # Mengatasi nilai kosong pada kolom numerik dengan mengganti NaN dengan rata-rata kolom
+        data[numeric_columns] = data[numeric_columns].fillna(data[numeric_columns].mean())
+
+        # Mengatasi nilai kosong pada kolom kategorikal dengan mengganti NaN dengan modus (nilai terbanyak)
+        for col in categorical_columns:
+            data[col] = data[col].fillna(data[col].mode()[0])
+
+        # Mengkonversi kolom kategorikal menjadi numerik
+        le = LabelEncoder()
+        for col in categorical_columns:
+            data[col] = le.fit_transform(data[col])
+
+        # Memisahkan fitur dan target
+        X = data.iloc[:, :-1]  # Semua kolom kecuali yang terakhir sebagai fitur
+        y = data.iloc[:, -1]   # Kolom terakhir sebagai target
+
+        # Normalisasi fitur
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+
+        return data, X_scaled, y
+    except Exception as e:
+        print(f"Terjadi kesalahan saat preprocessing: {e}")
+        sys.exit()
+
+# Fungsi untuk visualisasi data
+def visualize_data(data):
+    if data is not None:
+        print("Visualisasi data...")
+
+        # Visualisasi histogram untuk semua fitur
+        data.hist(figsize=(10, 8))
+        plt.suptitle("Distribusi Fitur dalam Dataset")
+        plt.show()
+
+        # Boxplot untuk melihat sebaran data pada setiap fitur
+        data.plot(kind='box', figsize=(10, 8))
+        plt.suptitle("Boxplot Fitur dalam Dataset")
+        plt.show()
+    else:
+        print("Data tidak tersedia untuk visualisasi. Harap pastikan data sudah diproses.")
+
+# Fungsi untuk memilih dan menjalankan algoritma
+def apply_algorithm(features, target, algorithm):
+    if algorithm == "Decision Tree":
+        model = DecisionTreeRegressor()
+    else:
+        print("Algoritma tidak dikenali.")
+        return None
+    
+    # Membagi data menjadi data latih dan data uji
+    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+    
+    # Melatih model
+    model.fit(X_train, y_train)
+    
+    # Prediksi dan evaluasi
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    
+    print(f"Mean Squared Error (MSE) untuk {algorithm}: {mse}")
+
+# Menu utama
+def main():
+    features, target, data = None, None, None  # Inisialisasi variabel global
+    
+    while True:
+        print("\nMenu Utama:")
+        print("1. Input Data dan Proses Preprocessing")
+        print("2. Visualisasi Data")
+        print("3. Analisis Menggunakan Algoritma")
+        print("4. Keluar")
+        
+        choice = input("Pilih menu (1/2/3/4): ")
+        
+        if choice == "1":
+            file_path = input("Masukkan nama file Excel (.xlsx): ")
+            # Pastikan file yang dimasukkan benar
+            try:
+                features, target, data = preprocess_data(file_path)
+                if features is not None and target is not None:
+                    print("Proses preprocessing selesai.")
+            except SystemExit:
+                print("Proses preprocessing gagal, program dihentikan.")
+        
+        elif choice == "2":
+            if data is not None:
+                visualize_data(data)
+            else:
+                print("Data belum dimuat. Harap pilih menu 1 terlebih dahulu.")
+        
+        elif choice == "3":
+            if features is not None and target is not None:
+                algorithm = input("Pilih algoritma (Decision Tree): ")
+                apply_algorithm(features, target, algorithm)
+            else:
+                print("Data belum diproses. Harap pilih menu 1 terlebih dahulu.")
+        
+        elif choice == "4":
+            print("Keluar dari program.")
+            break
+        else:
+            print("Pilihan tidak valid. Harap pilih menu yang benar.")
+
+if __name__ == "__main__":
+    main()
